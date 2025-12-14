@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 4.0)
+project(TreeFS VERSION 1.0)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED True)
+set(CMAKE_EXPORT_COMPILE_COMMANDS True)
+set(EXEC_NAME tfs)
+
+file(GLOB_RECURSE TREEFS_SOURCE
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
+)
+
+add_executable(${EXEC_NAME} ${TREEFS_SOURCE})
