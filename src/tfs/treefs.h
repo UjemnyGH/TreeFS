@@ -92,6 +92,21 @@ typedef enum tfs_checksum_e {
 } tfs_checksum_t;
 
 /*
+ * Return true if block is directory, false otherwise
+ */
+tfs_bool_t tfs_isDirectory(tfs_t *const pTfs, tfs_uint32_t blockAddress);
+
+/*
+ * Return true if block is file block, false otherwise
+ */
+tfs_bool_t tfs_isFile(tfs_t *const pTfs, tfs_uint32_t blockAddress);
+
+/*
+ * Return true if block is continuation of a block, false otherwise
+ */
+tfs_bool_t tfs_isContinuation(tfs_t *const pTfs, tfs_uint32_t blockAddress);
+
+/*
  * Initialize integration layer for file system
  */
 void tfs_init(tfs_t *const pTfs, PFN_tfsRWCallback write, PFN_tfsRWCallback read);

@@ -400,6 +400,30 @@ tfs_uint32_t _tfs_createFileOrDir(tfs_t *const pTfs, tfs_uint32_t parentDirector
   return pTfs->rootDirBlock;
 }
 
+tfs_bool_t tfs_isDirectory(tfs_t *const pTfs, tfs_uint32_t blockAddress) {
+  pTfs->read(gBlockHeap, blockAddress);
+
+  tfs_header_t *header = ((tfs_header_t*)gBlockHeap);
+
+  return (header->flags & tfs_header_flags_directory ? tfs_true : tfs_false);
+}
+
+tfs_bool_t tfs_isFile(tfs_t *const pTfs, tfs_uint32_t blockAddress) {
+  pTfs->read(gBlockHeap, blockAddress);
+
+  tfs_header_t *header = ((tfs_header_t*)gBlockHeap);
+
+  return (header->flags & tfs_header_flags_file ? tfs_true : tfs_false);
+}
+
+tfs_bool_t tfs_isContinuation(tfs_t *const pTfs, tfs_uint32_t blockAddress) {
+  pTfs->read(gBlockHeap, blockAddress);
+
+  tfs_header_t *header = ((tfs_header_t*)gBlockHeap);
+
+  return (header->flags & tfs_header_flags_continuation ? tfs_true : tfs_false);
+}
+
 void tfs_init(tfs_t *const pTfs, PFN_tfsRWCallback write, PFN_tfsRWCallback read) {
   pTfs->write = write;
   pTfs->read = read;
@@ -796,6 +820,8 @@ tfs_bool_t tfs_removeFile(tfs_t *const pTfs, tfs_uint32_t fileBlockAddress) {
 
     current = header->nextBlock;
     header->nextBlock = 0;
+
+    _tfs_freeBlock(pTfs, current);
   }
 
   return tfs_true;
@@ -809,7 +835,43 @@ tfs_bool_t tfs_removeDirectory(tfs_t *const pTfs, tfs_uint32_t directoryBlockAdd
   if(!(header->flags & tfs_header_flags_directory))
     return tfs_false;
 
-  // TODO: Finish 
+  const tfs_uint32_t offset = header->entryOffset;
+  const tfs_uint32_t entriesPerBlock = (TFS_BLOCK_SIZE - sizeof(tfs_header_t)) / sizeof(tfs_directoryEntry_t);
+  const tfs_uint32_t skippedBlocks = offset / entriesPerBlock;
+  const tfs_uint32_t entryOffset = offset % entriesPerBlock;
+
+  tfs_uint32_t entryBlockAddr = header->parentBlock;
+
+  // Red parent of first file block (directory block should be as parent block)
+  pTfs->read(gBlockHeap, header->parentBlock);
+
+  // Skip to entry
+  for(tfs_uint32_t i = 0; i < skippedBlocks; i++) {
+    if(!header->nextBlock)
+      return tfs_false;
+
+    entryBlockAddr = header->nextBlock;
+    pTfs->read(gBlockHeap, entryBlockAddr);
+  }
+
+  // Remove entry in parent
+  header->entriesInBlock--;
+  tfs_directoryEntry_t *dir = ((tfs_directoryEntry_t*)(gBlockHeap + sizeof(tfs_header_t)));
+  dir[entryOffset].blockAddress = 0;
+  dir[entryOffset].nameLength = 0;
+  dir[entryOffset].type = tfs_directoryEntry_type_free;
+ 
+  _tfs_resolveHeapHeaderChecksum();
+
+  pTfs->write(gBlockHeap, entryBlockAddr);
+
+  tfs_uint32_t current = directoryBlockAddress;
+
+  do {
+    pTfs->read(gBlockHeap, current);
+    
+    
+  } while(current);
 
   return tfs_true;
 }
