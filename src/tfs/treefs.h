@@ -107,6 +107,11 @@ tfs_bool_t tfs_isFile(tfs_t *const pTfs, tfs_uint32_t blockAddress);
 tfs_bool_t tfs_isContinuation(tfs_t *const pTfs, tfs_uint32_t blockAddress);
 
 /*
+ * Return how many bytes file takes
+ */
+tfs_uint32_t tfs_getFileSize(tfs_t *const pTfs, tfs_uint32_t fileBlockAddress);
+
+/*
  * Initialize integration layer for file system
  */
 void tfs_init(tfs_t *const pTfs, PFN_tfsRWCallback write, PFN_tfsRWCallback read);
@@ -156,6 +161,12 @@ tfs_uint32_t tfs_readFile(tfs_t *const pTfs, tfs_uint32_t fileBlockAddress, void
  * return amount of wrotee bytes
  */
 tfs_uint32_t tfs_writeFile(tfs_t *const pTfs, tfs_uint32_t fileBlockAddress, const void *const data, tfs_uint32_t size, tfs_uint32_t offset);
+
+/*
+ * Renames file or directory
+ * return true on suuccess or false on error
+ */
+tfs_bool_t tfs_renameEntry(tfs_t *const pTfs, tfs_uint32_t blockAddress, const char *newName);
 
 /*
  * Removes file from directory
