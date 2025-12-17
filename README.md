@@ -1,22 +1,72 @@
-# TreeFS, your files survive... even if your HDD doesn't
+# TreeFS
+#### Your files survive... even if your HDD doesn't!
 TreeFS was designed mainly for embedded use, or on solid state drives
 
-## Current features
-- Creating directories and files
-- Reading and writing files
-- Removing files
+## History
+I basically wanted a file system that I can use on embedded devices, so I started implementing ext2 for bare metal, 
+but it have many unnecessary "features", like timestamps and permissions. I didnt need that on STM32, so I started 
+remaking it into my own file system, but my own file system was also not that well suited. <br/> 
+Then I thought, what even is a file system? <br/> 
+It have files and directories. Directories can basically store more directories and files, so directory is like tree
+node. Thats when idea appeared to make TreeFS, a tree based file system, with no useless features (at base at least, 
+I left some bytes for future expansion). I made TreeFS project at 11PM on the Saturday of 13.12.2025, by the end of 
+Sunday (14.12.2025) I had working almost file system. On the Wednesday (17.12.2025) I had working CLI and working 
+file system, fully tested and checked to be idiot-proof, as I know I would be able to pull up some "root removing"
+activities. <br/>
+<br/>
+So thats where base TreeFS currently sits on. It needs 2kB of RAM, where 1kB is used as a operation buffer and 1kB 
+is just a buffer for other non related stuff (I wouldnt recommend running it on 1kB systems as it would take entire 
+memory, thats why 2kB minimum requirement). It doesnt use dynamic allocation, it doesnt use any STD C libraries. <br/>
+Basically every line of code for base file system is written from the ground up by me, though out by me and designed 
+by me, even stuff like memcpy (`_tfs_copyMemory` in tfs/treefs.c), memset (`_tfs_setMemory` in tfs/treefs.c), memcmp 
+(`_tfs_compareMemory` in tfs/treefs.c) and strlen (`_tfs_lengthString` in tfs/treefs.c) were written by me. Entire 
+file system uses checksum to check if block is valid. Entire file system is decentralised. If error occurs, only 1
+block can be possibly corrupted, which should be easy to find.
 
-## Features to add
-- Removing directories
-
-### TreeFS library is under [src/tfs/](src/tfs/)
-
-## What this even is?
+## TL;DR, What this even is?
 - It is a file system based on tree
 - Everything have parent 
 - Everything is a node
 - Everything takes 1 block and 1 block exactly
 - Directories can have more than 1 child
+
+## Future plans
+- Add fill large files support feature
+- Add recovery API
+- Add wear leveling feature
+- Add timestamps feature
+- Add permissions feature
+- Make FUSE to use it on linux more easily
+- Make full driver for it
+
+Basically with all the features it would somewhat meet POSIX requirements. But base doesnt need to meet them, base 
+must just work and be usable on virtually any system anyone can think of (as long as it have 2kB of RAM)!
+
+## Usage
+For now you need to compile it yourself using cmake
+> mkdir build <br/>
+> cd build <br/>
+> cmake .. <br/>
+> cmake --build .
+
+You should have then `tfs` executable, which can modify TreeFS drive from CLI. Currently CLI features are not very rich.
+
+## Documentation
+Yea, what about it, currently there is none, but I would make it in future, describing every function and how to use it
+
+## Current features
+- Creating directories and files
+- Reading and writing files
+- Removing files
+- Removing directory
+- Renaming directories and files
+- Listing directories
+- And more ;) 
+
+## Features to add
+- Removing directories
+
+### TreeFS library is under [src/tfs/](src/tfs/)
 
 ## How it works?
 Simply!<br/>

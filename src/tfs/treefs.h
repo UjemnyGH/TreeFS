@@ -22,6 +22,8 @@ typedef enum tfs_bool_e {
 #define TFS_FS_INFO_BLOCK       1
 #define TFS_FIRST_DATA_BLOCK    2
 
+static tfs_uint8_t gBlockHeap[TFS_BLOCK_SIZE];
+
 typedef struct tfs_fileSystemInfo_s {
   tfs_uint32_t checksum;
   tfs_uint32_t checksumXored;
@@ -91,6 +93,15 @@ typedef enum tfs_checksum_e {
   tfs_headerChecksum = 2
 } tfs_checksum_t;
 
+typedef enum tfs_result_e {
+  tfs_result_success = 0,
+  tfs_result_addressMismatch = 1,
+  tfs_result_wrongBlockType = 2,
+  tfs_result_nextBlockMissing = 3,
+  tfs_result_directoryNotEmpty = 4,
+  tfs_result_wrongOperationOnRequiredBlock = 5,
+} tfs_result_t;
+
 /*
  * Return true if block is directory, false otherwise
  */
@@ -105,6 +116,11 @@ tfs_bool_t tfs_isFile(tfs_t *const pTfs, tfs_uint32_t blockAddress);
  * Return true if block is continuation of a block, false otherwise
  */
 tfs_bool_t tfs_isContinuation(tfs_t *const pTfs, tfs_uint32_t blockAddress);
+
+/*
+ * Return true if directory is empty or false if is not or provided address was for a file block
+ */
+tfs_bool_t tfs_isDirectoryEmpty(tfs_t *const pTfs, tfs_uint32_t directoryBlockAddress);
 
 /*
  * Return how many bytes file takes
@@ -139,6 +155,12 @@ tfs_uint32_t tfs_findInDirectory(tfs_t *const pTfs, tfs_uint32_t parentDirectory
 tfs_uint32_t tfs_findAbsolutePath(tfs_t *const pTfs, const char *path);
 
 /*
+ * Outputs all filenames from directory
+ * Return how many names were read
+ */
+tfs_uint32_t tfs_listDirectory(tfs_t *const pTfs, const tfs_uint32_t directoryBlockAddress, char *namesOut, tfs_uint32_t maxNames);
+
+/*
  * Creates new directory in parent dir
  * return block address of new directory
  */
@@ -171,8 +193,10 @@ tfs_bool_t tfs_renameEntry(tfs_t *const pTfs, tfs_uint32_t blockAddress, const c
 /*
  * Removes file from directory
  */
-tfs_bool_t tfs_removeFile(tfs_t *const pTfs, tfs_uint32_t fileBlockAddress);
+tfs_result_t tfs_removeFile(tfs_t *const pTfs, tfs_uint32_t fileBlockAddress);
 
-tfs_bool_t tfs_removeDirectory(tfs_t *const pTfs, tfs_uint32_t directoryBlockAddress);
+tfs_result_t tfs_removeDirectory(tfs_t *const pTfs, tfs_uint32_t directoryBlockAddress);
+
+tfs_result_t tfs_remove(tfs_t *const pTfs, tfs_uint32_t blockAddress);
 
 #endif
