@@ -1,5 +1,7 @@
 #include "treefs.h"
 
+tfs_uint8_t gBlockHeap[TFS_BLOCK_SIZE];
+
 void* _tfs_copyMemeory(void *const pDst, const void *const pSrc, tfs_uint32_t size) {
   for(tfs_uint32_t i = 0; i < size; i++)
     ((tfs_uint8_t*)pDst)[i] = ((tfs_uint8_t*)pSrc)[i];

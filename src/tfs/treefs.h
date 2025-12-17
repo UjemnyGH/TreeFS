@@ -22,7 +22,7 @@ typedef enum tfs_bool_e {
 #define TFS_FS_INFO_BLOCK       1
 #define TFS_FIRST_DATA_BLOCK    2
 
-static tfs_uint8_t gBlockHeap[TFS_BLOCK_SIZE];
+extern tfs_uint8_t gBlockHeap[TFS_BLOCK_SIZE];
 
 typedef struct tfs_fileSystemInfo_s {
   tfs_uint32_t checksum;
